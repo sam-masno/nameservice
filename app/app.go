@@ -28,7 +28,7 @@ import (
   // this line is used by starport scaffolding # 1
 )
 
-const appName = "nameservice"
+const nameService = "nameservice"
 
 var (
 	DefaultCLIHome = os.ExpandEnv("$HOME/.nameservicecli")
@@ -61,7 +61,7 @@ func MakeCodec() *codec.Codec {
 	return cdc.Seal()
 }
 
-type NewApp struct {
+type NameServiceApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
 
@@ -84,15 +84,15 @@ type NewApp struct {
 	sm *module.SimulationManager
 }
 
-var _ simapp.App = (*NewApp)(nil)
+var _ simapp.App = (*NameServiceApp)(nil)
 
 func NewInitApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
-) *NewApp {
+) *NameServiceApp {
 	cdc := MakeCodec()
 
-	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
+	bApp := bam.NewBaseApp(nameService, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetAppVersion(version.Version)
 
@@ -108,7 +108,7 @@ func NewInitApp(
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
-	var app = &NewApp{
+	var app = &NameServiceApp{
 		BaseApp:        bApp,
 		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
@@ -217,7 +217,7 @@ func NewDefaultGenesisState() GenesisState {
 	return ModuleBasics.DefaultGenesis()
 }
 
-func (app *NewApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *NameServiceApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState simapp.GenesisState
 
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
@@ -225,19 +225,19 @@ func (app *NewApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 
-func (app *NewApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+func (app *NameServiceApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
 
-func (app *NewApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+func (app *NameServiceApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
 }
 
-func (app *NewApp) LoadHeight(height int64) error {
+func (app *NameServiceApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
 
-func (app *NewApp) ModuleAccountAddrs() map[string]bool {
+func (app *NameServiceApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
@@ -246,11 +246,11 @@ func (app *NewApp) ModuleAccountAddrs() map[string]bool {
 	return modAccAddrs
 }
 
-func (app *NewApp) Codec() *codec.Codec {
+func (app *NameServiceApp) Codec() *codec.Codec {
 	return app.cdc
 }
 
-func (app *NewApp) SimulationManager() *module.SimulationManager {
+func (app *NameServiceApp) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 

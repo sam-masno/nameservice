@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npm install && vue-cli-service serve",
-    "serve": "vue-cli-service serve",
+    "dev": "npm install && vue-cli-service serve --port 3000",
+    "serve": "vue-cli-service serve --port 3000",
     "build": "vue-cli-service build"
   },
   "dependencies": {
